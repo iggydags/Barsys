@@ -7,7 +7,7 @@
 :root{--ink:#161616;--mut:#77776f;--faint:#b3b3ac;--line:#e6e6e2;
   --green:#2f7d55;--greenbg:#e9f3ec;--amber:#8a5605;--amberbg:#fdf0d9;--red:#9c2b20;--redbg:#fbe4e1;--blue:#2c5f88;--bluebg:#e8f0f6;
   --yellow:#7a6410;--yellowbg:#faf3cf;
-  --pad:clamp(16px,4vw,28px);--gut:clamp(10px,2.4vw,12px)}
+  --pad:clamp(16px,4vw,28px);--gut:clamp(10px,2.4vw,12px);--stick:64px}
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:96px;-webkit-text-size-adjust:100%}
 body{font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--ink);background:#fff;-webkit-font-smoothing:antialiased}
@@ -103,14 +103,18 @@ h2{font-size:clamp(17px,3.6vw,20px);letter-spacing:-.2px;color:var(--ink);font-w
 }
 /* table */
 .tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+/* wide enough for the table to fit: drop the scroll container so the header can stick to the page */
+@media screen and (min-width:960px){.tablewrap{overflow:visible}}
 table.t{border-collapse:collapse;width:100%;font-size:14px;table-layout:fixed;min-width:900px}
 table.t col.c-id{width:80px}table.t col.c-item{width:auto}table.t col.c-who{width:150px}table.t col.c-due{width:90px}table.t col.c-st{width:120px}table.t col.c-needs{width:130px}
-table.t thead th{text-align:left;font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:var(--mut);font-weight:700;padding:10px 12px;border-bottom:1px solid var(--ink)}
+table.t thead th{position:sticky;top:var(--stick);z-index:10;background:#fff;
+  text-align:left;font-size:13px;letter-spacing:1.2px;text-transform:uppercase;color:var(--mut);font-weight:700;padding:12px;
+  border-bottom:0;box-shadow:inset 0 -1px 0 var(--ink)}
 table.t td{padding:13px 12px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.5}
 tr.phase td{padding:0;border-bottom:1px solid var(--line)}
-tr.phase button{width:100%;padding:26px 12px 8px;font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:var(--mut);font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:12px}
+tr.phase button{width:100%;padding:26px 12px 9px;font-size:13px;letter-spacing:1.6px;text-transform:uppercase;color:var(--mut);font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:12px}
 tr.phase button:hover{color:var(--ink)}
-tr.phase .cnt{font-weight:600;letter-spacing:0;text-transform:none;font-size:12px;white-space:nowrap}
+tr.phase .cnt{font-weight:600;letter-spacing:0;text-transform:none;font-size:13px;white-space:nowrap}
 tr.phase .pill{letter-spacing:0;text-transform:none;margin-left:10px;vertical-align:1px}
 tr.phase .pill+.pill{margin-left:6px}
 tr.phase .chev{display:inline-block;transition:transform .15s;margin-right:8px}
@@ -151,7 +155,7 @@ tr.hide{display:none}
   table.t tbody{display:block}
   tr.phase{display:block}
   tr.phase td{display:block;padding:0!important;border-bottom:1px solid var(--line)}
-  tr.phase button{padding:24px 2px 10px;flex-wrap:wrap;gap:6px}
+  tr.phase button{padding:24px 2px 10px;flex-wrap:wrap;gap:6px;font-size:12.5px;letter-spacing:1.3px}
   tr.phase .pill{margin-left:8px}
   table.t tbody tr:not(.phase){display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:start;
     border:1px solid var(--line);border-radius:12px;margin:10px 0 0;padding:13px 14px 14px}
@@ -423,5 +427,17 @@ const p=new URLSearchParams(location.search);
 if(p.get('dept'))S.dept=p.get('dept');if(p.get('status'))S.status=p.get('status');if(p.get('owner'))S.owner=p.get('owner');
 if(p.get('view')==='attention')S.att=true;if(p.get('view')==='cost')S.cost=true;
 buildBar();buildChain();sync();render();
+
+/* keep the floating column header docked under the filter bar, whatever height that bar is */
+function measure(){
+  const h=$('controls').offsetHeight;
+  const th=document.querySelector('table.t thead th');
+  const ht=th?th.offsetHeight:0;
+  document.documentElement.style.setProperty('--stick',h+'px');
+  document.documentElement.style.scrollPaddingTop=(h+ht+10)+'px';
+}
+measure();
+if(window.ResizeObserver)new ResizeObserver(measure).observe($('controls'));
+addEventListener('resize',measure);
 </script>
 </body></html>
